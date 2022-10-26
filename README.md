@@ -52,5 +52,5 @@ site                                              profilename         ssid
 Global/AUS/PER5/F4                                9800                dot1x,9800,BCN
 Global/AUS/PER5                                   9800                dot1x,9800,BCN
 Global/AUS/PER6                                   9800                dot1x,9800,BCN
-Global/AUS/PER6/f1                                9800                dot1x,9800,BC
+Global/AUS/PER6/f1                                9800                dot1x,9800,BCN
 ```
