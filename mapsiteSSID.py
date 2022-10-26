@@ -10,6 +10,8 @@ from  time import sleep, time, strftime, localtime
 from dnac_config import DNAC, DNAC_USER, DNAC_PASSWORD
 logger = logging.getLogger(__name__)
 
+#FMTSTR="{:30s}:{:20s}:{}"
+FMTSTR="{:50s}{:30s}{}"
 class TaskTimeoutError(Exception):
     pass
 
@@ -24,9 +26,10 @@ def format_time(secs):
 def print_site(sitestr, profile):
     #print(profile)
     ssid = ",".join([ssid.name for ssid in profile.profileDetails.ssidDetails if 'name' in ssid])
+    name = profile.profileDetails.name
     for site in profile.profileDetails.sites:
         if sitestr is None or sitestr in site:
-            print("{}:{}".format(site,ssid))
+            print(FMTSTR.format(site,name,ssid))
 
 def match_sites(sitestr, sitelist):
     if sitestr is None:
@@ -36,6 +39,7 @@ def match_sites(sitestr, sitelist):
 
 def main(dnac,sitestr):
     profiles = dnac.wireless.get_wireless_profile()
+    print(FMTSTR.format("site","profilename","ssid"))
     for profile in profiles:
         if sitestr or match_sites(sitestr, profile.profileDetails.sites):
              print_site(sitestr, profile)
