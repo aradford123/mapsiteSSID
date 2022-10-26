@@ -29,26 +29,28 @@ Edit the dnac_vars file to add your DNAC and credential.  You can also use envir
 if you run without any arguments, all sites and SSID will be displayed (including sites with a profile that has no SSID).
 
 ```
- ./mapsiteSSID.py 
-Global/AUS/PER5/F4:dot1x,9800,BCN
-Global/AUS/PER5:dot1x,9800,BCN
-Global/AUS/PER6:dot1x,9800,BCN
-Global/AUS/PER6/f1:dot1x,9800,BCN
-Global/brownfield/coogee beach/f1:
-Global/brownfield/coogee beach:
-Global/AUS/Perth site:9800
-Global/AUS/Perth site/floor one:9800
-Global/flex_area/b1:hk
-Global/flex_area/b1/f1:hk
+$ ./mapsiteSSID.py 
+site                                              profilename         ssid
+Global/AUS/PER5/F4                                9800                dot1x,9800,BCN
+Global/AUS/PER5                                   9800                dot1x,9800,BCN
+Global/AUS/PER6                                   9800                dot1x,9800,BCN
+Global/AUS/PER6/f1                                9800                dot1x,9800,BCN
+Global/brownfield/coogee beach/f1                 BrownfieldProfile_7 
+Global/brownfield/coogee beach                    BrownfieldProfile_7       
+Global/AUS/Perth site                             Flex                9800
+Global/AUS/Perth site/floor one                   Flex                9800
+Global/flex_area/b1                               flex profile        hk
+Global/flex_area/b1/f1                            flex profile        hk
 
 ```
 
 use the --sitestr argument to provide a string to match against the site name
 
 ```
-$ ./mapsiteSSID.py --sitestr AUS/PER
-Global/AUS/PER5/F4:dot1x,9800,BCN
-Global/AUS/PER5:dot1x,9800,BCN
-Global/AUS/PER6:dot1x,9800,BCN
-Global/AUS/PER6/f1:dot1x,9800,BCN
+./mapsiteSSID.py --sitestr AUS/PER
+site                                              profilename         ssid
+Global/AUS/PER5/F4                                9800                dot1x,9800,BCN
+Global/AUS/PER5                                   9800                dot1x,9800,BCN
+Global/AUS/PER6                                   9800                dot1x,9800,BCN
+Global/AUS/PER6/f1                                9800                dot1x,9800,BC
 ```
