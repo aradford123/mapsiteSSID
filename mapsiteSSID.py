@@ -83,8 +83,8 @@ def main(dnac,sitestr):
     try:
          #raise ValueError("as")
          profiles = dnac.wireless.get_wireless_profile()
-#    except ApiError:
-    except ValueError:
+    except ApiError:
+#    except ValueError:
          profiles = get_profiles(dnac)
     print(FMTSTR.format("site","profilename","ssid"))
     for profile in profiles:
