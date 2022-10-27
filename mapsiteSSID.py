@@ -10,8 +10,8 @@ from  time import sleep, time, strftime, localtime
 from dnac_config import DNAC, DNAC_USER, DNAC_PASSWORD
 logger = logging.getLogger(__name__)
 
-#FMTSTR="{:30s}:{:20s}:{}"
-FMTSTR="{:50s}{:30s}{}"
+#FMTSTR="{:50s}{:30s}{}"
+FMTSTR="{}:{}:{}"
 class TaskTimeoutError(Exception):
     pass
 
