@@ -65,7 +65,10 @@ def get_internal_profile(dnac,profileid):
     
     #sites = [site['name'] for site in p.sites]
     # convert site id to name to get Fully qualified site name
-    sites = [map_site_id_to_name(dnac, site['uuid']) for site in p.sites]
+    if p.sites:
+        sites = [map_site_id_to_name(dnac, site['uuid']) for site in p.sites]
+    else:
+        sites = []
     p = Profile(ProfileDetails(p.name, sites, ssid))
     return p 
 
@@ -81,7 +84,7 @@ def get_profiles(dnac):
         
 def main(dnac,sitestr):
     try:
-         #raise ValueError("as")
+#         raise ValueError("as")
          profiles = dnac.wireless.get_wireless_profile()
     except ApiError:
 #    except ValueError:
