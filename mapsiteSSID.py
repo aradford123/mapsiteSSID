@@ -38,9 +38,10 @@ def match_sites(sitestr, sitelist):
 
 def build_profile_cache(dnac):
     # this is for version 2.2.2.x where the get for wireless profile is broken.  Can only do a get for a named profile
-    profiles = dnac.custom_caller.call_api(method="GET", resource_path="api/v1/siteprofile/attribute?key=wireless.ssid")
+#    profiles = dnac.custom_caller.call_api(method="GET", resource_path="api/v1/siteprofile/attribute?key=wireless.ssid")
+    profiles = dnac.custom_caller.call_api(method="GET", resource_path="api/v1/siteprofile?namespace=wlan")
     #result = [profile['name'] for profile in profiles['response']]
-    #print(profiles)
+    #print(json.dumps(profiles))
     result = [profile['siteProfileUuid'] for profile in profiles['response']]
     return result
 
@@ -91,7 +92,10 @@ def get_internal_profile(dnac,sitecache,profileid):
     # using this as the wireless_profile API is rate limited to 5/min
     profile = dnac.custom_caller.call_api(method="GET", resource_path="api/v1/siteprofile/{}?includeSites=true&excludeSettings=true&populated=true".format(profileid))
     p = profile.response
-    ssid = [ {'name': s['value']} for s in p.profileAttributes if s['value'] is not None ]
+    if 'profileAttributes' in p:
+        ssid = [ {'name': s['value']} for s in p.profileAttributes if s['value'] is not None ]
+    else:
+        ssid = []
     
     #sites = [site['name'] for site in p.sites]
     # convert site id to name to get Fully qualified site name
@@ -116,7 +120,7 @@ def get_profiles(dnac):
         
 def collect_sites(dnac):
     try:
-#         raise ValueError("as")
+         #raise ValueError("as")
          profiles = dnac.wireless.get_wireless_profile()
     except ApiError:
 #    except ValueError:
@@ -129,21 +133,56 @@ def print_profiles(profiles, sitestr):
         if sitestr or match_sites(sitestr, profile.profileDetails.sites):
              print_site(sitestr, profile)
 
-def get_wlc_id(dnac, ip="10.10.10.146"):
+def get_wlc_id(dnac, wlcip):
     try:
-        response = dnac.devices.get_network_device_by_ip(ip_address=ip)
+        response = dnac.devices.get_network_device_by_ip(ip_address=wlcip)
     except ApiError as e:
         print("Device {} not found".format(ip))
         sys.exit(1)
-    return response.id
+    return response.response.id
 
-def get_wlc_site_list(dnac, id):
-    pass
+def get_wlc_site_list(dnac, wlcid):
+    sitelist=[]
+    LIMIT = 2
+    # response = dnac.sites.get_site_count()
+    url = "api/v1/group/count?groupType=SITE&additionalInfo.nameSpace=com.wireless.managingwlc&additionalInfo.attributes.primaryWlc={}".format(wlcid)
+    response = dnac.custom_caller.call_api(method="GET", resource_path=url)
+    count = response.response
+    logger.debug ("COUNT:{}".format(count))
 
-def main(dnac, sitestr):
+    for start in range(1, count+1, LIMIT):
+    #response = dnac.sites.get_site(offset=str(start),limit=str(LIMIT))
+        url="/api/v1/group?groupType=SITE&additionalInfo.nameSpace=com.wireless.managingwlc&additionalInfo.attributes.primaryWlc={}&limit={}&offset={}".format(wlcid,LIMIT,start)
+        response = dnac.custom_caller.call_api(method="GET", resource_path=url)
+
+        sites = [ site.groupNameHierarchy for site in response['response']]
+        sitelist.extend(sites)
+    return sitelist
+def match_sites_to_profiles(profiles, sitelist):
+    site_to_profile = {s: p.profileDetails.name for p in profiles for s in p.profileDetails.sites}
+    #profilelist = [ site_to_profile[site] for site in sitelist]
+    profilelist = []
+    for site in sitelist:
+        if not site in site_to_profile:
+            print("Error: site {} defined on WLC but not assigned to a profile".format(site))
+        else:
+            profilelist.append(site_to_profile[site])
+    return set(profilelist)
+    
+def map_wlc_to_profiles(dnac, profiles, wlcip):
+    wlcid = get_wlc_id(dnac, wlcip)
+    logger.debug("wlcid:{}".format(wlcid))
+    sitelist = get_wlc_site_list(dnac, wlcid)
+    profilelist = match_sites_to_profiles(profiles, sitelist)
+    print("{}:{}".format(wlcip,profilelist))
+
+def wlc_to_profile(dnac, wlcip):
+    profiles = collect_sites(dnac)
+    map_wlc_to_profiles(dnac,profiles, wlcip)
+    
+def sitematch(dnac, sitestr):
     profiles = collect_sites(dnac)
     print_profiles(profiles, sitestr)
-#    wlcid = get_wlc_id(dnac)
 
 
 if __name__ == "__main__":
@@ -152,6 +191,8 @@ if __name__ == "__main__":
                         help="verbose")
     parser.add_argument('--sitestr',  type=str,
                         help='site string to match')
+    parser.add_argument('--wlcip',  type=str,
+                        help='show wireless profiles for WLC with this ip')
     args = parser.parse_args()
 
     if args.v:
@@ -166,6 +207,8 @@ if __name__ == "__main__":
     dnac = api.DNACenterAPI(base_url='https://{}:443'.format(DNAC),
                                 #username=DNAC_USER,password=DNAC_PASSWORD,verify=False,debug=True)
                                 username=DNAC_USER,password=DNAC_PASSWORD,verify=False)
-
-    main(dnac, args.sitestr)
+    if args.wlcip:
+        wlc_to_profile(dnac, args.wlcip)
+    else:
+        sitematch(dnac, args.sitestr)
 
