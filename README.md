@@ -1,5 +1,5 @@
 # mapsiteSSID
-maps sites to SSID defined in Wireless Network profiles on Cisco DNA Center
+This script will display mappings between sites/wireless profiles/SSID in environments configured by Cisco DNA Center.  It also shows the mapping between a 9800 WLC and the network profiles it is using.
 
 ## Getting stated
 First (optional) step, create a vitualenv. This makes it less likely to clash with other python libraries in future.
